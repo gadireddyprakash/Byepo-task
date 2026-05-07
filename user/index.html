@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Feature Checker</title>
+</head>
+
+<body>
+
+<h1>User Feature Checker</h1>
+
+<input
+  id="organizationId"
+  placeholder="Organization ID"
+/>
+
+<br><br>
+
+<input
+  id="featureKey"
+  placeholder="Feature Key"
+/>
+
+<br><br>
+
+<button onclick="checkFeature()">
+  Check Feature
+</button>
+
+<h2 id="result"></h2>
+
+<script>
+
+async function checkFeature() {
+
+  const organizationId =
+    document.getElementById("organizationId").value;
+
+  const key =
+    document.getElementById("featureKey").value;
+
+  const response = await fetch(
+    "http://localhost:5000/feature/check",
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        organizationId,
+        key
+      })
+    }
+  );
+
+  const data = await response.json();
+
+  if (data.enabled) {
+
+    document.getElementById("result").innerText =
+      "Feature Enabled";
+
+  } else {
+
+    document.getElementById("result").innerText =
+      "Feature Disabled";
+  }
+}
+
+</script>
+
+</body>
+</html>

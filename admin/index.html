@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Organization Admin</title>
+</head>
+
+<body>
+
+<h1>Organization Admin</h1>
+
+<h2>Signup</h2>
+
+<input id="signupName" placeholder="Name">
+<input id="signupEmail" placeholder="Email">
+<input id="signupPassword" type="password" placeholder="Password">
+<input id="organizationId" placeholder="Organization ID">
+
+<button onclick="signup()">
+  Signup
+</button>
+
+<hr>
+
+<h2>Login</h2>
+
+<input id="loginEmail" placeholder="Email">
+<input id="loginPassword" type="password" placeholder="Password">
+
+<button onclick="login()">
+  Login
+</button>
+
+<hr>
+
+<h2>Create Feature Flag</h2>
+
+<input id="featureKey" placeholder="Feature Key">
+
+<label>
+  Enabled
+  <input id="featureEnabled" type="checkbox">
+</label>
+
+<button onclick="createFlag()">
+  Create Feature
+</button>
+
+<hr>
+
+<h2>Feature Flags</h2>
+
+<button onclick="loadFlags()">
+  Load Flags
+</button>
+
+<ul id="flagList"></ul>
+
+<script>
+
+let token = "";
+
+async function signup() {
+
+  const name =
+    document.getElementById("signupName").value;
+
+  const email =
+    document.getElementById("signupEmail").value;
+
+  const password =
+    document.getElementById("signupPassword").value;
+
+  const organizationId =
+    document.getElementById("organizationId").value;
+
+  const response = await fetch(
+    "http://localhost:5000/admin/signup",
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+        organizationId
+      })
+    }
+  );
+
+  const data = await response.json();
+
+  console.log(data);
+
+  alert("Signup Successful");
+}
+
+async function login() {
+
+  const email =
+    document.getElementById("loginEmail").value;
+
+  const password =
+    document.getElementById("loginPassword").value;
+
+  const response = await fetch(
+    "http://localhost:5000/admin/login",
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        email,
+        password
+      })
+    }
+  );
+
+  const data = await response.json();
+
+  token = data.token;
+
+  localStorage.setItem("token", token);
+
+  alert("Login Successful");
+}
+
+async function createFlag() {
+
+  token = localStorage.getItem("token");
+
+  const key =
+    document.getElementById("featureKey").value;
+
+  const enabled =
+    document.getElementById("featureEnabled").checked;
+
+  const response = await fetch(
+    "http://localhost:5000/flags",
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        authorization: token
+      },
+
+      body: JSON.stringify({
+        key,
+        enabled
+      })
+    }
+  );
+
+  const data = await response.json();
+
+  console.log(data);
+
+  alert("Feature Created");
+}
+
+async function loadFlags() {
+
+  token = localStorage.getItem("token");
+
+  const response = await fetch(
+    "http://localhost:5000/flags",
+    {
+      headers: {
+        authorization: token
+      }
+    }
+  );
+
+  const flags = await response.json();
+
+  const list =
+    document.getElementById("flagList");
+
+  list.innerHTML = "";
+
+  flags.forEach(flag => {
+
+    const li = document.createElement("li");
+
+    li.innerHTML = `
+      ${flag.key} - ${flag.enabled}
+      <button onclick="deleteFlag('${flag._id}')">
+        Delete
+      </button>
+    `;
+
+    list.appendChild(li);
+  });
+}
+
+async function deleteFlag(id) {
+
+  token = localStorage.getItem("token");
+
+  await fetch(
+    `http://localhost:5000/flags/${id}`,
+    {
+      method: "DELETE",
+
+      headers: {
+        authorization: token
+      }
+    }
+  );
+
+  loadFlags();
+}
+
+</script>
+
+</body>
+</html>
